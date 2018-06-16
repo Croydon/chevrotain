@@ -7,6 +7,9 @@
 -   [Failed parsing < /.../ > Using the regexp-to-ast library.](#REGEXP_PARSING)
 -   [The regexp unicode flag is not currently supported by the regexp-to-ast library.](#UNICODE_OPTIMIZE)
 -   [TokenType <...> is using a custom token pattern without providing <char_start_hint> parameter](#CUSTOM_OPTIMIZE)
+-   [Unable to identify line terminator usage in pattern.](#IDENTIFY_TERMINATOR)
+-   [A Custom Token Pattern should specify the <line_breaks> option.](#CUSTOM_LINE_BREAK)
+-   [Missing <lineTerminatorCharacters> property on the Lexer config.](#MISSING_LINE_TERM_CHARS)
 
 ## No LINE_BREAKS Error
 
@@ -14,10 +17,10 @@ A Chevrotain Lexer will by default track the full position information for each 
 This includes line and column information.
 
 In order to support this the Lexer must be aware of which Tokens may include line terminators.
-This information must be provided by the lexer's author.
+This information is normally computed automatically
 
-This error means that the Lexer has been defined to track line and column information (perhaps by default).
-Yet not a single one of the Token definitions passed to it was defined as possibly containing line terminators.
+This warning means that the Lexer has been defined to track line and column information (perhaps by default).
+Yet not a single one of the Token definitions passed to it was detected as possibly containing line terminators.
 
 To resolve this choose one of the following:
 
@@ -291,6 +294,60 @@ const IntegerToken = createToken({
 
 Providing the "[start_chars_hint][start_chars_hint]" property is **not** mandatory.
 It will only enable performance optimizations in the lexer.
+
+## Unable to identify line terminator usage in pattern
+
+A Chevrotain lexer must be aware which of the TokenTypes may match a line terminator.
+This is required to compute the correct line and column position information.
+Normally Chevrotain can identify this information automatically using the [regexp-to-ast library][regexp_to_ast],
+however sometimes this logic fails. This is only a **warning** which will cause a small performance
+loss to the lexer and would not impact its correctness.
+
+To resolve this warning, **explicitly** specify the line_breaks option in the offending TokenType:
+
+```javascript
+const MyToken = createToken({
+    name: "MyToken",
+    pattern: /abc/,
+    line_breaks: false
+})
+const MultiLineStringLiteral = createToken({
+    name: "MultiLineStringLiteral",
+    pattern: /`[^`]*`/,
+    line_breaks: true
+})
+```
+
+Also please open an issue so the the root problem could be tracked and resolved.
+
+## A Custom Token Pattern should specify the <line_breaks> option
+
+A Chevrotain lexer must be aware which of the Token Types may match a line terminator.
+It is not possible to do so automatically when using [custom token patterns][custom_token_patterns].
+This means it is highly recommended to explicitly provide the line_breaks argument when creating
+a TokenType:
+
+```javascript
+const MyCustomToken = createToken({
+    name: "MyCustomToken",
+    pattern: { exec: matchFunction },
+    line_breaks: false
+})
+const MyCustomMultiLineToken = createToken({
+    name: "MyCustomMultiLineToken",
+    pattern: { exec: matchFunction2 },
+    line_breaks: true
+})
+```
+
+This is only a **warning** which will cause a small performance
+loss to the lexer and would not impact its correctness.
+If no explicit <line_break> option is provided it would be implicitly treated as "true"
+for [custom token patterns][custom_token_patterns].
+
+## Missing <lineTerminatorCharacters> property on the Lexer config
+
+aaa
 
 [position_tracking]: https://sap.github.io/chevrotain/documentation/3_5_0/interfaces/ilexerconfig.html#positiontracking
 [line_terminator_docs]: https://sap.github.io/chevrotain/documentation/3_5_0/interfaces/ilexerconfig.html#lineTerminatorsPattern

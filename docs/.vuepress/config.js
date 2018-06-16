@@ -37,7 +37,13 @@ const slugMap = {
     "Why does my parser appear to be stuck during it's initialization?":
         "STUCK_AMBIGUITY",
     "How do I Maximize my parser's performance?": "PERFORMANCE",
-    'Why do my tests fail when using "mocha --watch"?': "MOCHA_WATCH"
+    'Why do my tests fail when using "mocha --watch"?': "MOCHA_WATCH",
+    "Unable to identify line terminator usage in pattern":
+        "IDENTIFY_TERMINATOR",
+    "A Custom Token Pattern should specify the <line_breaks> option":
+        "CUSTOM_LINE_BREAK",
+    "Missing <lineTerminatorCharacters> property on the Lexer config":
+        "MISSING_LINE_TERM_CHARS"
 }
 
 const slugMapUsed = _.mapValues(slugMap, () => false)
